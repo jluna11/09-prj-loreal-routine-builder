@@ -40,30 +40,51 @@ body {
 .search-section {
   margin: 30px 0;
   display: flex;
+  gap: 12px;
 }
 
 .search-section select {
-  width: 100%;
+  width: 45%;
   padding: 16px;
   font-size: 18px;
-  border: 2px solid #000;
+  font-family: Helvetica, Arial, sans-serif;
+  border: 2px solid #e3a535;
   border-radius: 8px;
   cursor: pointer;
   background-color: white;
   font-weight: 500;
 }
 
+.search-section select option {
+  font-family: Helvetica, Arial, sans-serif;
+}
+
 .search-section select:focus {
   outline: none;
-  border-color: #666;
+  border-color: #e3a535;
+}
+
+#productSearch {
+  width: 55%;
+  padding: 16px;
+  font-size: 18px;
+  font-family: Helvetica, Arial, sans-serif;
+  border: 2px solid #e3a535;
+  border-radius: 8px;
+}
+
+#productSearch:focus {
+  outline: none;
+  border-color: #e3a535;
 }
 
 /* chat section */
 .chatbox {
   margin: 40px 0;
-  border: 2px solid #000;
+  border: 2px solid #e3a535;
   border-radius: 8px;
   padding: 26px;
+  font-family: Helvetica, Arial, sans-serif;
 }
 
 .chatbox h2 {
@@ -86,6 +107,7 @@ body {
   width: 100%;
   text-align: center;
   padding: 40px;
+  font-family: sans-serif;
   color: #666;
   font-size: 18px;
 }
@@ -101,19 +123,25 @@ body {
   flex: 1;
   padding: 12px;
   font-size: 18px;
+  font-family: Helvetica, Arial, sans-serif;
   border: none;
-  border-bottom: 2px solid #ccc;
+  border-bottom: 2px solid #e3a535;
   background: transparent;
 }
 
 .chat-form input:focus {
   outline: none;
-  border-bottom-color: #000;
+  border-bottom-color: #e3a535;
+}
+
+.chat-form input::placeholder {
+  font-family: sans-serif;
 }
 
 .chat-form button {
   font-size: 18px;
-  background: #000;
+  font-family: Helvetica, Arial, sans-serif;
+  background: #ff003b;
   color: #fff;
   border: none;
   padding: 12px;
@@ -127,11 +155,11 @@ body {
 }
 
 .chat-form button:hover {
-  background: #666666;
+  background: #ff003b;
 }
 
 .chat-form button:focus {
-  outline: 2px solid #000;
+  outline: 2px solid #e3a535;
   outline-offset: 2px;
 }
 
@@ -152,6 +180,7 @@ body {
 .site-footer {
   margin: 60px 0 40px;
   text-align: center;
+  font-family: sans-serif;
   font-size: 14px;
   color: #666;
 }
@@ -162,6 +191,7 @@ body {
 
 .site-footer a {
   margin: 0 8px;
+  font-family: sans-serif;
   color: #000;
   text-decoration: none;
 }
@@ -180,12 +210,30 @@ body {
 
 .product-card {
   flex: 0 1 calc(33.333% - 14px);
-  border: 1px solid #ccc;
+  border: 1px solid #e3a535;
   padding: 15px;
   border-radius: 4px;
   display: flex;
   gap: 15px;
   min-height: 160px;
+  font-family: Helvetica, Arial, sans-serif;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.product-card:hover {
+  border-color: #ff003b;
+}
+
+.product-card.selected {
+  border: 2px solid #ff003b;
+  background-color: #fff7f9;
+  box-shadow: 0 0 0 2px rgba(255, 0, 59, 0.08);
 }
 
 .product-card img {
@@ -213,12 +261,48 @@ body {
   color: #666;
 }
 
+.product-description-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.97);
+  border: 2px solid #ff003b;
+  border-radius: 4px;
+  padding: 12px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.product-description-overlay p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #333;
+  font-family: sans-serif;
+}
+
+.product-card:hover .product-description-overlay,
+.product-card:focus-within .product-description-overlay,
+.product-card:focus .product-description-overlay {
+  opacity: 1;
+}
+
+.product-card:focus {
+  outline: 2px solid #e3a535;
+  outline-offset: 2px;
+}
+
 /* selected products */
 .selected-products {
   margin: 40px 0;
   padding: 20px;
-  border: 2px solid #000;
+  border: 2px solid #e3a535;
   border-radius: 8px;
+  font-family: Helvetica, Arial, sans-serif;
 }
 
 .selected-products h2 {
@@ -232,14 +316,60 @@ body {
   gap: 10px;
 }
 
+.clear-selections-btn {
+  width: 100%;
+  margin-top: 14px;
+  padding: 12px;
+  font-size: 15px;
+  font-family: sans-serif;
+  color: #ff003b;
+  background: #fff;
+  border: 1px solid #e3a535;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.clear-selections-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.selected-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #e3a535;
+  border-radius: 999px;
+  padding: 8px 12px;
+  background-color: #fff;
+}
+
+.remove-selected-btn {
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 50%;
+  background: #ff003b;
+  color: #fff;
+  font-family: sans-serif;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.remove-selected-btn:hover {
+  opacity: 0.9;
+}
+
 .generate-btn {
   width: 100%;
-  margin-top: 20px;
+  margin-top: 12px;
   padding: 16px;
   font-size: 18px;
+  font-family: sans-serif;
   font-weight: 500;
   color: #fff;
-  background: #000;
+  background: #ff003b;
   border: none;
   border-radius: 8px;
   cursor: pointer;
@@ -247,7 +377,7 @@ body {
 }
 
 .generate-btn:hover {
-  background: #666;
+  background: #ff003b;
 }
 
 .generate-btn i {
