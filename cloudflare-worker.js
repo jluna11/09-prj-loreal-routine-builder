@@ -1,9 +1,24 @@
 export default {
   async fetch(request, env) {
+    const CORS_HEADERS = {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      "content-type": "application/json",
+    };
+
+    // Handle CORS preflight requests
+    if (request.method === "OPTIONS") {
+      return new Response(null, {
+        status: 204,
+        headers: CORS_HEADERS,
+      });
+    }
+
     if (request.method !== "POST") {
       return new Response(JSON.stringify({ error: "Method not allowed" }), {
         status: 405,
-        headers: { "content-type": "application/json" },
+        headers: CORS_HEADERS,
       });
     }
 
@@ -13,7 +28,7 @@ export default {
     if (expectedToken && authHeader !== `Bearer ${expectedToken}`) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
-        headers: { "content-type": "application/json" },
+        headers: CORS_HEADERS,
       });
     }
 
@@ -47,7 +62,7 @@ export default {
           }),
           {
             status: openAIResponse.status,
-            headers: { "content-type": "application/json" },
+            headers: CORS_HEADERS,
           },
         );
       }
@@ -57,14 +72,14 @@ export default {
 
       return new Response(JSON.stringify({ reply }), {
         status: 200,
-        headers: { "content-type": "application/json" },
+        headers: CORS_HEADERS,
       });
     } catch (error) {
       return new Response(
         JSON.stringify({ error: "Invalid request or server error" }),
         {
           status: 500,
-          headers: { "content-type": "application/json" },
+          headers: CORS_HEADERS,
         },
       );
     }
