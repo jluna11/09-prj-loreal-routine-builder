@@ -10,9 +10,9 @@ const userInput = document.getElementById("userInput");
 const chatWindow = document.getElementById("chatWindow");
 
 const SELECTED_PRODUCTS_STORAGE_KEY = "lorealSelectedProductIds";
-const WORKER_ENDPOINT = "";
-const WORKER_ENDPOINT_PLACEHOLDER =
-  "https://YOUR-WORKER-SUBDOMAIN.workers.dev/chat";
+const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
+const OPENAI_MODEL = "gpt-4o";
+const OPENAI_API_KEY_PLACEHOLDER = "PASTE_YOUR_OPENAI_API_KEY_HERE";
 
 /* Global state for products + conversation */
 let allProducts = [];
@@ -269,65 +269,50 @@ function getSelectedProductsForRoutine() {
   }));
 }
 
-/* Read Worker config from window when available */
-function getWorkerConfig() {
-  const configuredEndpoint = (window.WORKER_ENDPOINT || "").trim();
-  const isPlaceholderEndpoint =
-    configuredEndpoint === WORKER_ENDPOINT_PLACEHOLDER ||
-    configuredEndpoint.includes("YOUR-WORKER-SUBDOMAIN");
+/* Read the OpenAI API key from secrets.js */
+function getOpenAIConfig() {
+  const apiKey = (window.OPENAI_API_KEY || "").trim();
 
-  return {
-    endpoint:
-      configuredEndpoint && !isPlaceholderEndpoint
-        ? configuredEndpoint
-        : WORKER_ENDPOINT,
-    token: (window.WORKER_TOKEN || "").trim(),
-  };
-}
-
-/* Send a chat request to Cloudflare Worker (instead of OpenAI directly) */
-async function getWorkerResponse(messages) {
-  const workerConfig = getWorkerConfig();
-
-  if (!workerConfig.endpoint) {
+  if (!apiKey || apiKey === OPENAI_API_KEY_PLACEHOLDER) {
     throw new Error(
-      "Missing Worker endpoint. Set window.WORKER_ENDPOINT in secrets.js to your deployed Cloudflare Worker URL.",
+      "Missing OpenAI API key. Set window.OPENAI_API_KEY in secrets.js.",
     );
   }
 
-  const headers = {
-    "Content-Type": "application/json",
+  return {
+    apiKey,
   };
+}
 
-  /* Optional extra protection: require a Worker token */
-  if (workerConfig.token) {
-    headers.Authorization = `Bearer ${workerConfig.token}`;
-  }
+/* Send messages directly to the OpenAI Chat Completions API */
+async function getOpenAIChatResponse(messages) {
+  const openAIConfig = getOpenAIConfig();
 
-  const response = await fetch(workerConfig.endpoint, {
+  const response = await fetch(OPENAI_API_URL, {
     method: "POST",
-    headers,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${openAIConfig.apiKey}`,
+    },
     body: JSON.stringify({
       messages,
-      model: "gpt-4o",
+      model: OPENAI_MODEL,
       temperature: 0.7,
     }),
   });
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    const errorMessage = errorData?.error || "Worker request failed.";
+    const errorMessage = errorData?.error?.message || "OpenAI request failed.";
     throw new Error(errorMessage);
   }
 
   const data = await response.json();
 
-  /* Accept either a custom Worker shape or OpenAI-compatible shape */
-  const aiMessage =
-    data.reply || data.output_text || data?.choices?.[0]?.message?.content;
+  const aiMessage = data?.choices?.[0]?.message?.content;
 
   if (!aiMessage) {
-    throw new Error("Worker returned no AI message.");
+    throw new Error("OpenAI returned no AI message.");
   }
 
   return aiMessage;
@@ -357,7 +342,7 @@ async function generateRoutineFromSelectedProducts() {
     },
   ];
 
-  const aiMessage = await getWorkerResponse(messages);
+  const aiMessage = await getOpenAIChatResponse(messages);
 
   latestGeneratedRoutine = aiMessage;
 
@@ -396,7 +381,7 @@ async function getOpenAIResponse(userMessage) {
     },
   ];
 
-  const aiMessage = await getWorkerResponse(messages);
+  const aiMessage = await getOpenAIChatResponse(messages);
 
   conversationHistory.push({ role: "user", content: userMessage });
   conversationHistory.push({ role: "assistant", content: aiMessage });
