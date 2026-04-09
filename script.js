@@ -12,7 +12,8 @@ const chatWindow = document.getElementById("chatWindow");
 const SELECTED_PRODUCTS_STORAGE_KEY = "lorealSelectedProductIds";
 const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
 const OPENAI_MODEL = "gpt-4o";
-const OPENAI_API_KEY_PLACEHOLDER = "PASTE_YOUR_OPENAI_API_KEY_HERE";
+const OPENAI_API_KEY =
+  "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";
 
 /* Global state for products + conversation */
 let allProducts = [];
@@ -269,14 +270,12 @@ function getSelectedProductsForRoutine() {
   }));
 }
 
-/* Read the OpenAI API key from secrets.js */
+/* Read the OpenAI API key */
 function getOpenAIConfig() {
-  const apiKey = (window.OPENAI_API_KEY || "").trim();
+  const apiKey = (window.OPENAI_API_KEY || OPENAI_API_KEY).trim();
 
-  if (!apiKey || apiKey === OPENAI_API_KEY_PLACEHOLDER) {
-    throw new Error(
-      "Missing OpenAI API key. Set window.OPENAI_API_KEY in secrets.js.",
-    );
+  if (!apiKey) {
+    throw new Error("Missing OpenAI API key.");
   }
 
   return {
